@@ -155,83 +155,103 @@ submit_button.place(x=300, y=520, width=200, height=30)
 ################################# DEMO PAGE #################################################
 '''MODEL'''
 # Create canvas for the demo game
-canvas = Canvas(demo_frame, width=760, height=450, bg="white")
-canvas.place(x=20, y=80)
+canvas = Canvas(demo_frame, width=700, height=400, bg="white")
+canvas.place(x=50, y=100)
 
 class Player:
     def __init__(self, up_key, right_key, down_key, left_key, outline):
-        self.x = 380
-        self.y = 250
+        self.x = 350
+        self.y = 200
         self.radius = 20
         self.outline = outline
-        
-        # Create player square
         self.square = canvas.create_rectangle(
-            self.x - self.radius, 
-            self.y - self.radius, 
-            self.x + self.radius, 
-            self.y + self.radius, 
-            fill="blue", 
-            outline=outline,
-            width=2
+            self.x - self.radius, self.y - self.radius,
+            self.x + self.radius, self.y + self.radius,
+            outline=outline, fill="", width=2
         )
-        
-        # Bind movement keys
         root.bind(up_key, self.up)
         root.bind(down_key, self.down)
         root.bind(right_key, self.right)
         root.bind(left_key, self.left)
     
     def up(self, event=None):
-        canvas.move(self.square, 0, -10)
         self.y -= 10
+        canvas.move(self.square, 0, -10)
         self.check_bounds()
     
     def down(self, event=None):
-        canvas.move(self.square, 0, 10)
         self.y += 10
-        self.check_bounds()
-    
-    def left(self, event=None):
-        canvas.move(self.square, -10, 0)
-        self.x -= 10
+        canvas.move(self.square, 0, 10)
         self.check_bounds()
     
     def right(self, event=None):
-        canvas.move(self.square, 10, 0)
         self.x += 10
+        canvas.move(self.square, 10, 0)
+        self.check_bounds()
+    
+    def left(self, event=None):
+        self.x -= 10
+        canvas.move(self.square, -10, 0)
         self.check_bounds()
     
     def check_bounds(self):
-        # Check if player is out of canvas bounds
-        if (self.x - self.radius < 0 or 
-            self.x + self.radius > 760 or 
-            self.y - self.radius < 0 or 
-            self.y + self.radius > 450):
+        if (self.x - self.radius < 0 or self.x + self.radius > 700 or
+            self.y - self.radius < 0 or self.y + self.radius > 400):
             self.relocate()
     
     def relocate(self):
-        # Move player back to center and reduce size
-        self.x = 380
-        self.y = 250
+        self.x = 350
+        self.y = 200
         self.radius = max(5, self.radius - 5)  # Don't let radius go below 5
-        
-        # Update square position and size
         canvas.coords(
-            self.square, 
-            self.x - self.radius, 
-            self.y - self.radius, 
-            self.x + self.radius, 
-            self.y + self.radius
+            self.square,
+            self.x - self.radius, self.y - self.radius,
+            self.x + self.radius, self.y + self.radius
         )
 
-'''CONTROLLER'''
-# Create player instance
-player = Player("<Up>", "<Right>", "<Down>", "<Left>", "black")
+class Ball:
+    def __init__(self):
+        self.radius = random.randint(15, 30)
+        self.x = random.randint(self.radius, 700 - self.radius)
+        self.y = random.randint(self.radius, 400 - self.radius)
+        self.dx = random.choice([-3, -2, -1, 1, 2, 3])
+        self.dy = random.choice([-3, -2, -1, 1, 2, 3])
+        color = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        self.ball = canvas.create_oval(
+            self.x - self.radius, self.y - self.radius,
+            self.x + self.radius, self.y + self.radius,
+            fill=color, outline="black"
+        )
+    
+    def move(self):
+        self.x += self.dx
+        self.y += self.dy
+        
+        # Bounce off walls
+        if self.x - self.radius <= 0 or self.x + self.radius >= 700:
+            self.dx *= -1
+        if self.y - self.radius <= 0 or self.y + self.radius >= 400:
+            self.dy *= -1
+        
+        canvas.move(self.ball, self.dx, self.dy)
 
+'''CONTROLLER'''
 # Home button to return to the landing page
 home_button = Button(demo_frame, text="HOME", fg="white", bg="light blue", font=("Arial", 30), command=lambda: raise_frame(landing_frame))
 home_button.place(x=300, y=530, width=200, height=50)
+
+# Create player
+player = Player("<Up>", "<Right>", "<Down>", "<Left>", "blue")
+
+# Create balls and animation function
+balls = []
+for i in range(10):
+    balls.append(Ball())
+
+def animate_balls():
+    for ball in balls:
+        ball.move()
+    root.after(30, animate_balls)
 
 '''VIEW'''
 # Title label for the demo page
@@ -239,13 +259,15 @@ demo_title = Label(demo_frame, text="Demo Game", fg="white", bg="light blue", fo
 demo_title.place(x=200, y=20, width=400, height=50)
 
 # Instructions label
-instructions = Label(demo_frame, 
-                    text="Use arrow keys to move. Don't hit the walls!", 
+instructions = Label(demo_frame, text="Use arrow keys to move. Don't hit the walls!", 
                     fg="black", bg="light blue", font=("Arial", 12))
-instructions.place(x=200, y=550, width=400, height=30)
+instructions.place(x=200, y=70, width=400, height=20)
 
 # Start by showing the landing page
 raise_frame(landing_frame)
+
+# Start ball animation
+animate_balls()
 
 # Keep the window open and running
 root.mainloop()
