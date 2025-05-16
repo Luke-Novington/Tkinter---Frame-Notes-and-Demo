@@ -1,5 +1,6 @@
 from tkinter import *
 import random
+import math
 
 # Create the main window
 root = Tk()
@@ -8,8 +9,6 @@ root.title("Game Center")
 
 ################################# ROOT CODE ####################################################
 '''MODEL'''
-
-
 landing_frame = Frame(root, bg="teal")
 hangman_frame = Frame(root, bg="teal")
 demo_frame = Frame(root, bg="light blue")
@@ -18,10 +17,8 @@ demo_frame = Frame(root, bg="light blue")
 for frame in [landing_frame, hangman_frame, demo_frame]:
     frame.place(x=0, y=0, width=800, height=600)
 
-
 def raise_frame(frame):
     frame.tkraise()
-
 
 words = open("Tkinter---Frame-Notes-and-Demo-main\wordbank.txt", "r")
 wordbank = words.read().split()
@@ -96,7 +93,6 @@ def hangman_process_guess():
 ################################# LANDING PAGE #################################################
 '''MODEL'''
 
-
 '''CONTROLLER'''
 # Create buttons that switch to different frames
 hangman_button = Button(
@@ -154,28 +150,46 @@ submit_button.place(x=300, y=520, width=200, height=30)
 
 ################################# DEMO PAGE #################################################
 '''MODEL'''
-
-def game_loop():
-    for ball in balls:
-        ball.move()
-        for player in [red, blue]
-        if player.collision(ball):
-            ball.move()
-            if player.collision(ball):
-                canvas.delete(ball.circle) 
-                balls.remove(ball)
-                canvas.itemconfig(player.square, fill = random.choice(["red", "orange", "yellow", "green", "blue", "purple"]))
-       
-        canva . after(60, gameloop)
-# Create canvas for the demo game
-canvas = Canvas(demo_frame, width=760, height=450, bg="white")
-canvas.place(x=20, y=80)
+class Ball:
+    def __init__(self):
+        self.radius = 15
+        self.x = random.randint(self.radius, 760 - self.radius)
+        self.y = random.randint(self.radius, 450 - self.radius)
+        self.dx = random.choice([-3, -2, 2, 3])
+        self.dy = random.choice([-3, -2, 2, 3])
+        self.circle = canvas.create_oval(
+            self.x - self.radius,
+            self.y - self.radius,
+            self.x + self.radius,
+            self.y + self.radius,
+            fill="white",
+            outline="black"
+        )
+    
+    def move(self):
+        self.x += self.dx
+        self.y += self.dy
+        
+        # Bounce off walls
+        if self.x - self.radius <= 0 or self.x + self.radius >= 760:
+            self.dx *= -1
+        if self.y - self.radius <= 0 or self.y + self.radius >= 450:
+            self.dy *= -1
+            
+        canvas.coords(
+            self.circle,
+            self.x - self.radius,
+            self.y - self.radius,
+            self.x + self.radius,
+            self.y + self.radius
+        )
 
 class Player:
-    def __init__(self, up_key, right_key, down_key, left_key, outline):
-        self.x = 380
-        self.y = 250
+    def __init__(self, x, y, up_key, right_key, down_key, left_key, color, outline):
+        self.x = x
+        self.y = y
         self.radius = 20
+        self.color = color
         self.outline = outline
         
         # Create player square
@@ -184,7 +198,7 @@ class Player:
             self.y - self.radius, 
             self.x + self.radius, 
             self.y + self.radius, 
-            fill="blue", 
+            fill=color, 
             outline=outline,
             width=2
         )
@@ -225,8 +239,8 @@ class Player:
     
     def relocate(self):
         # Move player back to center and reduce size
-        self.x = 380
-        self.y = 250
+        self.x = 380 if self.color == "blue" else 380
+        self.y = 200 if self.color == "blue" else 300
         self.radius = max(5, self.radius - 5)  # Don't let radius go below 5
         
         # Update square position and size
@@ -237,13 +251,39 @@ class Player:
             self.x + self.radius, 
             self.y + self.radius
         )
-def collision(self, obj):
-    #
-    return math.dist((self.x, self.y), (obj.x, obj.y)) < (self.radius + obj.radius)
-'''CONTROLLER'''
-# Create player instance
-player = Player("<Up>", "<Right>", "<Down>", "<Left>", "black")
+    
+    def collision(self, obj):
+        # Calculate distance between centers
+        distance = math.sqrt((self.x - obj.x)**2 + (self.y - obj.y)**2)
+        return distance < (self.radius + obj.radius)
 
+# Create canvas for the demo game
+canvas = Canvas(demo_frame, width=760, height=450, bg="white")
+canvas.place(x=20, y=80)
+
+# Create players and balls
+red = Player(380, 200, "w", "d", "s", "a", "red", "black")
+blue = Player(380, 300, "<Up>", "<Right>", "<Down>", "<Left>", "blue", "black")
+balls = [Ball() for _ in range(5)]  # Create 5 balls
+
+def game_loop():
+    for ball in balls[:]:  # Use a copy for iteration since we might modify the list
+        ball.move()
+        for player in [red, blue]:
+            if player.collision(ball):
+                canvas.delete(ball.circle)
+                balls.remove(ball)
+                new_color = random.choice(["red", "orange", "yellow", "green", "blue", "purple"])
+                canvas.itemconfig(player.square, fill=new_color)
+                player.color = new_color
+                
+    # Occasionally add new balls
+    if random.random() < 0.02 and len(balls) < 10:
+        balls.append(Ball())
+    
+    canvas.after(60, game_loop)
+
+'''CONTROLLER'''
 # Home button to return to the landing page
 home_button = Button(demo_frame, text="HOME", fg="white", bg="light blue", font=("Arial", 30), command=lambda: raise_frame(landing_frame))
 home_button.place(x=300, y=530, width=200, height=50)
@@ -255,9 +295,12 @@ demo_title.place(x=200, y=20, width=400, height=50)
 
 # Instructions label
 instructions = Label(demo_frame, 
-                    text="Use arrow keys to move. Don't hit the walls!", 
+                    text="Use WASD (red) and Arrow Keys (blue) to move. Collect white balls!", 
                     fg="black", bg="light blue", font=("Arial", 12))
 instructions.place(x=200, y=550, width=400, height=30)
+
+# Start the game loop
+game_loop()
 
 # Start by showing the landing page
 raise_frame(landing_frame)
