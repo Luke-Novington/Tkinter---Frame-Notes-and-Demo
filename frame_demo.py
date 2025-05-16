@@ -160,16 +160,27 @@ class Player:
         self.y = 20
         self.radius = 20
 
-        self.square = canvas.create_rectangle(self.x - self.radius, self.)
+        self.square = canvas.create_rectangle(self.square, self.x - self.radius, self.y - self.radius, self.x -self.rafius, self.y - self.radius)
         root.bind(up_key, self.up)
         root.bind(down_key, self.down)
         root.bind(right_key, self.right)
         root.bind(left_key, self.left)
 
 
-def up(self):
+def up(self, event = none)
     canvas.move(self.square, 0, 10)
-    
+def left(self, event = none):
+def right(self, event = none):
+    self.x += 10
+def down(self, event = none):
+
+def relocate(self):
+    self.x = 380
+    self.y = 250
+    self.radius -= 5
+
+    canvas.coords(self.square, self.x - self.radius, self.y - self.radius, self.x -self.rafius, self.y - self.radius)
+
 
 '''CONTROLLER'''
 # Home button to return to the landing page
