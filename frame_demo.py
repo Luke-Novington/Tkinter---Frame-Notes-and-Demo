@@ -9,7 +9,7 @@ root.title("Game Center")
 ################################# ROOT CODE ####################################################
 '''MODEL'''
 
-# Create frames for each screen
+
 landing_frame = Frame(root, bg="teal")
 hangman_frame = Frame(root, bg="teal")
 demo_frame = Frame(root, bg="light blue")
@@ -18,17 +18,17 @@ demo_frame = Frame(root, bg="light blue")
 for frame in [landing_frame, hangman_frame, demo_frame]:
     frame.place(x=0, y=0, width=800, height=600)
 
-# This function brings a frame to the front (top of the stack)
+
 def raise_frame(frame):
     frame.tkraise()
 
-# Hangman game variables
-words = open("tkinter-hangman-Luke-Novington-main\wordbank.txt", "r")
+
+words = open("Tkinter---Frame-Notes-and-Demo-main\wordbank.txt", "r")
 wordbank = words.read().split()
 
 images = []
 for i in range(1, 8):
-    images.append(PhotoImage(file=f"tkinter-hangman-Luke-Novington-main\images\{i}.png"))
+    images.append(PhotoImage(file=f"Tkinter---Frame-Notes-and-Demo-main\images\{i}.png"))
 
 secret_word = ""
 guessed_letters = set()
@@ -95,7 +95,7 @@ def hangman_process_guess():
 
 ################################# LANDING PAGE #################################################
 '''MODEL'''
-# No data stored here yet; this screen just navigates to other pages
+
 
 '''CONTROLLER'''
 # Create buttons that switch to different frames
@@ -154,7 +154,22 @@ submit_button.place(x=300, y=520, width=200, height=30)
 
 ################################# DEMO PAGE #################################################
 '''MODEL'''
-# No data here yet — just a display screen
+class Player:
+    def __init__(self, up_key, right_key, down_key, left_key, outline):
+        self.x = 20
+        self.y = 20
+        self.radius = 20
+
+        self.square = canvas.create_rectangle(self.x - self.radius, self.)
+        root.bind(up_key, self.up)
+        root.bind(down_key, self.down)
+        root.bind(right_key, self.right)
+        root.bind(left_key, self.left)
+
+
+def up(self):
+    canvas.move(self.square, 0, 10)
+    
 
 '''CONTROLLER'''
 # Home button to return to the landing page
@@ -168,6 +183,10 @@ demo_title.place(x=200, y=20, width=400, height=50)
 
 # Start by showing the landing page
 raise_frame(landing_frame)
+
+balls = []
+for i in range(10):
+    balls.append(ball())
 
 # Keep the window open and running
 root.mainloop()
