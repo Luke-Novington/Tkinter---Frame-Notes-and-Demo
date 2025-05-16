@@ -159,7 +159,7 @@ def game_loop():
     for ball in balls:
         ball.move()
         for player in [red, blue]
-        if red.collision(ball):
+        if player.collision(ball):
             ball.move()
             if player.collision(ball):
                 canvas.delete(ball.circle) 
